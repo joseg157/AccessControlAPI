@@ -24,15 +24,6 @@ namespace server.Services
                 _config["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key is not set")
             );
 
-            var expireTime = int.Parse(
-                _config["Jwt:AccessTokenExpiryInSeconds"]
-                    ?? throw new InvalidOperationException(
-                        "Jwt:AccessTokenExpiryInSeconds is not set"
-                    )
-            );
-
-            var expireDate = DateTime.UtcNow.AddSeconds(expireTime);
-
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(
@@ -41,7 +32,15 @@ namespace server.Services
                         new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                     ]
                 ),
-                Expires = expireDate,
+                Expires = DateTime.UtcNow.AddMinutes(
+                    int.Parse(
+                        _config["Jwt:AccessTokenExpiryInMinutes"]
+                            ?? throw new InvalidOperationException(
+                                "Jwt:AccessTokenExpiryInMinutes is not set"
+                            )
+                    )
+                ),
+
                 Issuer =
                     _config["Jwt:Issuer"]
                     ?? throw new InvalidOperationException("Jwt:Issuer is not set"),
